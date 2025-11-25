@@ -1,0 +1,18 @@
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "metricgraph"
+version = "0.1.0"
+description = "Generate and plot metric and weighted graphs"
+authors = [
+    { name="ploki99"}
+]
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "numpy>=1.26",
+    "matplotlib>=3.9",
+    "vtk>=9.5"
+]
