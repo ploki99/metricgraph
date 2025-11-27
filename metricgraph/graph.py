@@ -1,10 +1,10 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import pickle
 import random
 
-from .arrow3d import *
 from .graphProperties import GraphProperties
+from .plotter import Plotter2d, Plotter3d
+
 
 class MetricGraph:
 
@@ -20,160 +20,17 @@ class MetricGraph:
         self.vertices = np.array(vertices)
         self.edges = np.array(edges)
         self.properties = None
+        self.plotter = None
+        if self.vertices.shape[1] == 2:
+            self.plotter = Plotter2d(self.vertices, self.edges)
+        if self.vertices.shape[1] == 3:
+            self.plotter = Plotter3d(self.vertices, self.edges)
 
     def __str__(self):
         return f"Vertices of the graph are:\n {self.vertices}\n" \
                f"Edges of the graph are:\n {self.edges}\n" \
                f"Number of vertices: {self.vertices.shape[0]}\n" \
                f"Number of edges: {self.edges.shape[0]}\n"
-
-    # Private interface
-    def __plot2d(self, color='blue', r=0.2, interactive=False, show_axis=True, plot_boundary=False, b_color='green',
-             title='', directed=False):
-        """
-        Plot a 2D image with graph representation.
-        :param color: color used to plot the graph
-        :param r: scaling factor
-        :param interactive: if True enable interactive mode
-        :param show_axis: if False doesn't show axis
-        :param plot_boundary: if True plot the boundary vertexes using b_color
-        :param b_color: color used to plot the boundary vertexes
-        :param title: optional title to plot on the figure
-        :param directed: if True plot the graph in directed mode
-        """
-        fig, ax = plt.subplots()
-
-        # Plot edges
-        for e in self.edges:
-            # Get coordinates
-            x0 = self.vertices[e[0]][0]
-            y0 = self.vertices[e[0]][1]
-            x1 = self.vertices[e[1]][0]
-            y1 = self.vertices[e[1]][1]
-
-            # Plot circle if we have a loop
-            if e[0] == e[1]:
-                theta = np.linspace(0, 1.75 * np.pi, 200)
-                x = r * np.cos(theta) + x0 - r / np.sqrt(2)
-                y = r * np.sin(theta) + y0 + r / np.sqrt(2)
-                ax.plot(x, y, c=color)
-                dx1, dy1 = get_dx_dy(x[0], y[0], x1, y1, r / 2)
-                ax.arrow(x[0], y[0], x1 + dx1 - x[0], y1 + dy1 - y[0], length_includes_head=True,
-                         head_width=0.05, head_length=0.05, fill=True, color=color)
-
-            # Plot line
-            else:
-                if directed:
-                    dx1, dy1 = get_dx_dy(x0, y0, x1, y1, r / 2)
-                    dx0, dy0 = 0, 0
-                    if is_edge_present(self.edges, [e[1], e[0]], directed):
-                        dx0, dy0 = dx1, dy1
-                    ax.arrow(x0 - dx0, y0 - dy0, x1 + dx1 - x0 + dx0, y1 + dy1 - y0 + dy0, length_includes_head=True,
-                             head_width=0.05, head_length=0.05, fill=True, color=color)
-                else:
-                    ax.plot([x0, x1], [y0, y1], c=color)
-
-        # Plot vertexes
-        mask = []
-        if plot_boundary:
-            mask = self.get_boundary_mask()
-        for i, v in enumerate(self.vertices):
-            vert_col = color
-            if plot_boundary and mask[i]:
-                vert_col = b_color
-            ax.scatter(v[0], v[1], s=r * 3000, zorder=2, facecolors='white', edgecolors=vert_col)
-            ax.text(v[0], v[1], i, fontsize=12, color=vert_col, horizontalalignment='center', verticalalignment='center')
-
-        # Show plot
-        if interactive:
-            plt.ion()
-        else:
-            plt.ioff()
-        if show_axis:
-            plt.axis('on')
-        else:
-            plt.axis('off')
-        plt.title(title)
-        plt.show()
-
-    def __plot3d(self, color='blue', r=0.2, interactive=False, show_axis=True, plot_boundary=False, b_color='green',
-             title='', directed=False):
-        """
-        Plot a 3D image with graph representation.
-        :param color: color used to plot the graph
-        :param r: scaling factor
-        :param interactive: if True enable interactive mode
-        :param show_axis: if False doesn't show axis
-        :param plot_boundary: if True plot the boundary vertexes using b_color
-        :param b_color: color used to plot the boundary vertexes
-        :param title: optional title to plot on the figure
-        :param directed: if True plot the graph in directed mode
-        """
-
-        fig = plt.figure()
-        ax = fig.add_subplot(projection='3d')
-
-        # Plot edges
-        for e in self.edges:
-            # Get coordinates
-            x0 = self.vertices[e[0]][0]
-            y0 = self.vertices[e[0]][1]
-            z0 = self.vertices[e[0]][2]
-            x1 = self.vertices[e[1]][0]
-            y1 = self.vertices[e[1]][1]
-            z1 = self.vertices[e[1]][2]
-
-            # Plot circle if we have a loop
-            if e[0] == e[1]:
-                theta = np.linspace(0, 1.7 * np.pi, 200)
-                x = r * np.cos(theta) + x0 - r / np.sqrt(2)
-                y = r * np.sin(theta) + y0 + r / np.sqrt(2)
-                z = np.zeros_like(theta) + z0
-                ax.plot(x, y, z, c=color)
-                # Plot arrow
-                dx, dy = get_dx_dy(x[0], y[0], x1, y1, r / 2)
-                ax.arrow3D(x[0], y[0], z0, x1 + dx - x[0], y1 + dy - y[0], 0,
-                           mutation_scale=15, arrowstyle="-|>", ec=color, fc=color)
-            # Plot line
-            else:
-                if directed:
-                    # Plot arrow
-                    dx1, dy1, dz1 = get_dx_dy_dz(x0, y0, z0, x1, y1, z1, r / 2)
-                    dx0, dy0, dz0 = 0, 0, 0
-                    if is_edge_present(self.edges, [e[1], e[0]], directed):
-                        dx0, dy0, dz0 = dx1, dy1, dz1
-                    ax.arrow3D(x0 - dx0, y0 - dy0, z0 - dz0,
-                               x1 + dx1 - x0 + dx0, y1 + dy1 - y0 + dy0, z1 + dz1 - z0 + dz0,
-                               mutation_scale=15, arrowstyle="-|>", ec=color, fc=color)
-                else:
-                    ax.plot([x0, x1], [y0, y1], [z0, z1], c=color)
-
-        # Plot vertices
-        mask = []
-        if plot_boundary:
-            mask = self.get_boundary_mask()
-        for i, v in enumerate(self.vertices):
-            vert_col = color
-            if plot_boundary and mask[i]:
-                vert_col = b_color
-            ax.scatter(v[0], v[1], v[2], s=r * 2000, facecolors='white', edgecolors=vert_col)
-            ax.text(v[0], v[1], v[2], i, fontsize=12, color=vert_col, zorder=self.vertices.shape[0] + 2,
-                    horizontalalignment='center', verticalalignment='center')
-
-        ax.set_xlabel("x")
-        ax.set_ylabel("y")
-        ax.set_zlabel("z")
-        # Show plot
-        if interactive:
-            plt.ion()
-        else:
-            plt.ioff()
-        if show_axis:
-            plt.axis('on')
-        else:
-            plt.axis('off')
-        plt.title(title)
-        plt.show()
 
     # Public interface of the class
 
@@ -316,25 +173,22 @@ class MetricGraph:
         # Return graph
         return graph
 
-    def plot(self, color='blue', r=0.2, interactive=False, show_axis=True, plot_boundary=False, b_color='green',
-             title='', directed=False):
+    def plot(self, color="blue", directed=False, interactive=False, line_widths=2, show_axis=False, title="",
+             vertices_label=True):
         """
         Plot image with graph representation.
-        :param color: color used to plot the graph
-        :param r: scaling factor
-        :param interactive: if True enable interactive mode
-        :param show_axis: if False doesn't show axis
-        :param plot_boundary: if True plot the boundary vertexes using b_color
-        :param b_color: color used to plot the boundary vertexes
-        :param title: optional title to plot on the figure
-        :param directed: if True plot the graph in directed mode
+        :param color: color to use for plotting the edges
+        :param directed: if True, plot the graph using arrows
+        :param interactive: if True, display the plot in interactive mode
+        :param line_widths: width of the lines
+        :param show_axis: if True, display the axis of the figure
+        :param title: title of the plot
+        :param vertices_label: if True, label the vertices of the graph
         """
-        if self.vertices.shape[1] == 2:
-            self.__plot2d(color, r, interactive, show_axis, plot_boundary, b_color, title, directed)
-        elif self.vertices.shape[1] == 3:
-            self.__plot3d(color, r, interactive, show_axis, plot_boundary, b_color, title, directed)
-        else:
+        if self.plotter is None:
             print("Cannot plot graph in dimension greater than 3")
+        else:
+            self.plotter.plot_graph(color, directed, interactive, line_widths, show_axis, title, vertices_label)
 
     def distance(self, point):
         """
@@ -405,25 +259,26 @@ class MetricGraph:
     def save(self, name):
         """
         Save graph object to file.
-        :param name: path and name of the file
+        :param name: path and name of the file (without extension)
         :type name: str
         """
         with open(name + '.pkl', 'wb') as out:
             pickle.dump(self, out, pickle.HIGHEST_PROTOCOL)
 
     @classmethod
-    def read(cls, name):
+    def load(cls, name):
         """
         Read graph object from file.
-        :param name: path and name of the file
+        :param name: path and name of the file (without extension)
         :type name: str
         :return: Graph read from file
         """
         with open(name + '.pkl', 'rb') as inp:
             obj = pickle.load(inp)
             if not isinstance(obj, cls):
-                raise Exception("Only MetricGraph type allowed")
+                return None
             return obj
+
 
 # Static functions
 def get_random_vertices(properties):
@@ -586,30 +441,3 @@ def has_dgraph_cycle(edges, n_vertices):
         return True
     # Proposed topologically sorted order: L
     return False
-
-# Additional plot functions
-def get_dx_dy(x0, y0, x1, y1, rho):
-    """
-    Only for visualization purposes of the arrows in case of directed graph
-    """
-    delta = 0
-    if x1 == x0:
-        theta = np.pi / 2
-        delta = np.sign(y0 - y1)
-    else:
-        theta = np.arctan((y1 - y0) / (x1 - x0))
-    dx1 = rho * np.cos(theta) * np.sign(x0 - x1)
-    dy1 = rho * np.sin(theta) * np.sign(x0 - x1 + delta) + delta * rho/2
-    return dx1, dy1
-
-def get_dx_dy_dz(x0, y0, z0, x1, y1, z1, rho):
-    """
-    Only for visualization purposes of the arrows in case of directed graph
-    """
-    dx1, dy1 = get_dx_dy(x0, y0, x1, y1, rho)
-    dx2, dz1 = get_dx_dy(x0, z0, x1, z1, rho)
-    dy2, dz2 = get_dx_dy(y0, z0, y1, z1, rho)
-    dx = (dx1 + dx2) / 2
-    dy = (dy1 + dy2) / 2
-    dz = (dz1 + dz2) / 2
-    return dx, dy, dz
