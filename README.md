@@ -22,7 +22,7 @@ pip install metricgraph
 Or install from source:
 
 ```bash
-git clone https://github.com/yourusername/metricgraph.git
+git clone https://github.com/ploki99/metricgraph.git
 cd metricgraph
 pip install -e .
 ```
