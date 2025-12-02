@@ -283,7 +283,7 @@ class Plotter3d(Plotter):
         for e in self.edges:
             x_s, y_s, z_s = self.vertices[e[0]]
             x_t, y_t, z_t = self.vertices[e[1]]
-            d1, d2, d3 = x_t - x_s, y_t - y_s, z_s - z_t
+            d1, d2, d3 = x_t - x_s, y_t - y_s, z_t - z_s
             x0.append(x_s + d1 * alpha)
             y0.append(y_s + d2 * alpha)
             z0.append(z_s + d3 * alpha)
