@@ -7,29 +7,19 @@ from .graph import MetricGraph
 class WeightedGraph(MetricGraph):
     """
     Extend MetricGraph adding weights on vertices and edges
+
+    :param vertices: vertices coordinates of the graph
+    :type vertices: list | np.ndarray
+    :param edges: connectivity matrix of the graph
+    :type edges: list | np.ndarray
     """
 
     def __init__(self, vertices, edges):
-        """
-        Build a WeightedGraph object
-        :param vertices: vertices coordinates of the graph
-        :type vertices: list | np.ndarray
-        :param edges: connectivity matrix of the graph
-        :type edges: list | np.ndarray
-        """
         super().__init__(vertices, edges)
         self.__weights = dict()
         self.__types = dict()
 
     def __set_weight(self, name, value, nodal_weight):
-        """
-        Add a value that represent a weight
-        :param name: name of the weight
-        :type name: str
-        :param value: value of the weight
-        :type value: list | np.ndarray
-        :param nodal_weight: if True, it's a nodal weight, else it's an edge weight
-        """
         value = np.array(value).ravel()
         length = self.vertices.shape[0] if nodal_weight else self.edges.shape[0]
         if value.shape[0] != length:
@@ -41,6 +31,7 @@ class WeightedGraph(MetricGraph):
     def set_edges_weight(self, name, value):
         """
         Add a weight on the edges
+
         :param name: name of the weight
         :type name: str
         :param value: value of the weight
@@ -50,7 +41,8 @@ class WeightedGraph(MetricGraph):
 
     def set_vertices_weight(self, name, value):
         """
-        Add a weight on the edges vertices
+        Add a weight on the vertices
+
         :param name: name of the weight
         :type name: str
         :param value: value of the weight
@@ -61,6 +53,7 @@ class WeightedGraph(MetricGraph):
     def get_weight(self, name):
         """
         Get a value that represent a weight, given its name
+
         :param name: name of the weight
         :type name: str
         :return: value of the weight
@@ -71,6 +64,7 @@ class WeightedGraph(MetricGraph):
     def get_weights_name(self):
         """
         Get all the weights' name
+
         :return: list of names
         :rtype: list[str]
         """
@@ -79,6 +73,7 @@ class WeightedGraph(MetricGraph):
     def is_nodal_weight(self, name):
         """
         Check if a value represent a nodal weight
+
         :param name: name of the weight
         :type name: str
         :return: True if a value represent a nodal weight, else False
@@ -90,19 +85,25 @@ class WeightedGraph(MetricGraph):
                     palette='viridis', show_axis=False, title=""):
         """
         Plot the graph with weights on vertices or edges
+
         :param name: name of the weight
         :type name: str
         :param dimension: dimension of plotted weight. For edges is the linewidth (default 3), for vertices is the nodal size (default 100)
         :type dimension: int | float
         :param interactive: if True, display the plot in interactive mode
+        :type interactive: bool
         :param legend_label: label of the colormap
+        :type legend_label: str
         :param max_value: maximum value to consider for the colormap, if None it's the actual maximum
         :type max_value: float
         :param min_value: minimum value to consider for the colormap, if None it's the actual minimum
         :type min_value: float
         :param palette: colormap palette
+        :type palette: str
         :param show_axis: if True, display the axis of the figure
+        :type show_axis: bool
         :param title: title of the plot
+        :type title: str
         """
         if self.plotter is None:
             print("Cannot plot graph in dimension greater than 3")
@@ -122,6 +123,7 @@ class WeightedGraph(MetricGraph):
     def write_vtk(self, filename):
         """
         Write the WeightedGraph on a vtk file
+
         :param filename: name of the file (without extension)
         :type filename: str
         """
@@ -163,9 +165,11 @@ class WeightedGraph(MetricGraph):
     def read_vtk(cls, filename):
         """
         Read the WeightedGraph from a vtk file
+
         :param filename: name of the file (without extension)
         :type filename: str
         :return: WeightedGraph
+        :rtype: WeightedGraph
         """
         # Read vtk
         reader = vtk.vtkPolyDataReader()

@@ -7,15 +7,16 @@ from .plotter import Plotter2d, Plotter3d
 
 
 class MetricGraph:
+    """
+    Class that build a MetricGraph object
+
+    :param vertices: vertices coordinates of the graph
+    :type vertices: list | np.ndarray
+    :param edges: connectivity matrix of the graph
+    :type edges: list | np.ndarray
+    """
 
     def __init__(self, vertices, edges):
-        """
-        Build a MetricGraph object
-        :param vertices: vertices coordinates of the graph
-        :type vertices: list | np.ndarray
-        :param edges: connectivity matrix of the graph
-        :type edges: list | np.ndarray
-        """
         # Save edges and vertices
         self.vertices = np.array(vertices)
         self.edges = np.array(edges)
@@ -37,6 +38,7 @@ class MetricGraph:
     def get_edges_length(self):
         """
         Compute length of edges between vertices.
+
         :return: Edge length
         :rtype: np.ndarray
         """
@@ -50,6 +52,7 @@ class MetricGraph:
     def get_graph_laplacian(self, w1=None, w2=None):
         """
         Compute graph laplacian. Consider the edge as undirected. Ignore self loops.
+
         :param w1: optional weight function, if used L_jj = L_jj * w1(edges_length[i])
         :type w1: function
         :param w2: optional weight function, if used L_jk = L_jk * w2(edges_length[i]), j != k
@@ -81,6 +84,7 @@ class MetricGraph:
     def get_boundary_mask(self):
         """
         Compute naturally boundary vertices (nodes with at maximum one connection, incoming or outgoing).
+
         :return: boolean numpy array
         :rtype: np.ndarray[bool]
         """
@@ -96,8 +100,10 @@ class MetricGraph:
 
     def get_boundary_coordinates(self):
         """
-        Compute naturally boundary vertices coordinates (nodes with at maximum one connection, incoming or outgoing).
-        :return: numpy array of coordinates
+        Compute the coordinates of boundary vertices.
+        Boundary vertices are nodes with at most one incident edge.
+
+        :return: Array of boundary vertex coordinates
         :rtype: np.ndarray
         """
         mask = self.get_boundary_mask()
@@ -112,6 +118,7 @@ class MetricGraph:
     def get_inlets(self):
         """
         Compute inlet vertices (nodes with no incoming connections).
+
         :return: numpy array of inlet vertices
         :rtype: np.ndarray[int]
         """
@@ -123,6 +130,7 @@ class MetricGraph:
     def get_outlets(self):
         """
         Compute outlet vertices (nodes with no outgoing connections).
+
         :return: numpy array of outlet vertices
         :rtype: np.ndarray[int]
         """
@@ -134,6 +142,7 @@ class MetricGraph:
     def get_properties(self):
         """
         Compute and return properties of the graph.
+
         :rtype: GraphProperties
         """
         if self.properties is None:
@@ -145,21 +154,30 @@ class MetricGraph:
                        strong_connected=False, weak_connected=True, acyclic=True):
         """
         Generate MetricGraph object, given its properties.
+
        :param n_vertices: number of vertices of the graph
        :type n_vertices: int
        :param n_dim: dimension of the space
+       :type n_dim: int
        :param domain_limits: limits of the bounding box containing the graph
        :type domain_limits: list | np.ndarray
        :param minimum_edges: number of minimum edges tried to be added (it may happen that the maximum number
                              of possible edges is smaller)
        :type minimum_edges: int
        :param directed: if True directed graph are considered
+       :type directed: bool
        :param loop: if True and directed=True self loop are allowed
+       :type loop: bool
        :param strong_connected: if True the graph has to be strongly connected (notice that the definition makes sense
                                 only for directed graph)
+       :type strong_connected: bool
        :param weak_connected: if True the graph has to be weakly connected in case of directed graph or just connected
                               in case of undirected graph
+       :type weak_connected: bool
        :param acyclic: if True the graph has to be acyclic
+       :type acyclic: bool
+       :return: MetricGraph object
+       :rtype: MetricGraph
        """
         properties = GraphProperties(n_vertices=n_vertices, n_dim=n_dim, limits=domain_limits,
                                      minimum_edges=minimum_edges, directed=directed,
@@ -177,13 +195,21 @@ class MetricGraph:
              vertices_label=True):
         """
         Plot image with graph representation.
+
         :param color: color to use for plotting the edges
+        :type color: str
         :param directed: if True, plot the graph using arrows
+        :type directed: bool
         :param interactive: if True, display the plot in interactive mode
+        :type interactive: bool
         :param line_widths: width of the lines
+        :type line_widths: int
         :param show_axis: if True, display the axis of the figure
+        :type show_axis: bool
         :param title: title of the plot
+        :type title: str
         :param vertices_label: if True, label the vertices of the graph
+        :type vertices_label: bool
         """
         if self.plotter is None:
             print("Cannot plot graph in dimension greater than 3")
@@ -197,6 +223,7 @@ class MetricGraph:
         - ret['space_prj'] = projection on the graph in the nd space, \n
         - ret['abscissa'] = abscissa of the projection, \n
         - ret['nearest_edge'] = nearest edge
+
         :param point: point to compute distance from
         :type point: list[float] | np.ndarray[float]
         :return: dictionary of computed values
@@ -235,9 +262,11 @@ class MetricGraph:
     def refine_graph(self, n_refinements):
         """
         Refine the graph adding internal vertices, return the refined graph.
+
         :param n_refinements: number of internal vertices to add for each edge
         :type n_refinements: int
         :return: refined graph
+        :rtype: MetricGraph
         """
         new_nodes = self.vertices.tolist()
         new_edges = []
@@ -259,6 +288,7 @@ class MetricGraph:
     def save(self, name):
         """
         Save graph object to file.
+
         :param name: path and name of the file (without extension)
         :type name: str
         """
@@ -269,9 +299,11 @@ class MetricGraph:
     def load(cls, name):
         """
         Read graph object from file.
+
         :param name: path and name of the file (without extension)
         :type name: str
         :return: Graph read from file
+        :rtype: MetricGraph
         """
         with open(name + '.pkl', 'rb') as inp:
             obj = pickle.load(inp)
