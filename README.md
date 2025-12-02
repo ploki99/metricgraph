@@ -37,7 +37,7 @@ import random
 
 from metricgraph import MetricGraph, WeightedGraph
 
-# Constructor test + graph plot
+# Construct 3D MetricGraph and plot it
 vertices = [[0, 0, 0.1],
             [0, 0.8, -0.1],
             [1, 0, 0.4],
@@ -49,13 +49,14 @@ print(graph)
 print(graph.get_properties())
 graph.plot(directed=True)
 
-# Generate weighted graph test + weight plots
+# Generate 2D WeightedGraph and plot edges/vertices weights 
 random.seed(42)
 graph2 = WeightedGraph.generate_graph(n_vertices=10, n_dim=2)
-graph2.set_edges_weight('test', np.arange(9))
-graph2.set_vertices_weight('test2', np.arange(10))
-graph2.plot_weight('test2', title='test vertices weight')
-graph2.plot_weight('test', title='test edges weight')
+graph2.set_edges_weight('edge_test', np.arange(9))
+graph2.plot_weight('edge_test', title='test edges weight')
+graph2.set_vertices_weight('vert_test', np.arange(10))
+graph2.plot_weight('vert_test', title='test vertices weight')
+
 ```
 
 ---

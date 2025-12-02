@@ -9,7 +9,7 @@
 project = 'metricgraph'
 copyright = '2025, ploki99'
 author = 'ploki99'
-release = '0.1.0'
+release = '0.1.1'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
